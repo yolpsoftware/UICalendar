@@ -149,22 +149,22 @@ namespace UICalendar
 		// public TrueWeekViewController WeekController { get; set; }
 		public NSAction AddNewEvent { get; set; }
 		private UIToolbar bottomBar;
-		public EKEventEditViewController addController;
+		//public EKEventEditViewController addController;
 		bool hasLoaded;
+		private IEventsSource dataSource;
 		
-		public RotatingCalendarView (RectangleF rect) : this(rect,0)
+		public RotatingCalendarView (RectangleF rect, IEventsSource source) : this(rect, source, 0)
 		{
-			
 		}
 		
-		public RotatingCalendarView (RectangleF rect, float tabBarHeight)
+		public RotatingCalendarView (RectangleF rect, IEventsSource source, float tabBarHeight)
 		{
-			
-			notificationObserver = NSNotificationCenter.DefaultCenter.AddObserver ("EKEventStoreChangedNotification", EventsChanged);
+			dataSource = source;
+			//notificationObserver = NSNotificationCenter.DefaultCenter.AddObserver ("EKEventStoreChangedNotification", EventsChanged);
 			this.Title = "Calendar";
 			CurrentDate = DateTime.Today;
-			SingleDayView = new CalendarDayTimelineView (rect, tabBarHeight);
-			WeekView = new TrueWeekView (CurrentDate);
+			SingleDayView = new CalendarDayTimelineView (rect, tabBarHeight, dataSource);
+			WeekView = new TrueWeekView (CurrentDate, dataSource);
 			WeekView.UseCalendar = true;
 			LandscapeLeftView = WeekView;
 			LandscapeRightView = WeekView;
@@ -188,27 +188,45 @@ namespace UICalendar
 				}
 			};
 			SingleDayView.dateChanged += theDate => { CurrentDate = theDate; };
-			this.OnEventClicked += theEvent =>
-			{
+
+			//this.OnEventClicked += theEvent =>
+			//{
+			//    //Util.MyEventStore.RemoveEvents(Util.getEvent(theEvent),EKSpan.ThisEvent,theError.Handle);
+			//    addController = new EKEventEditViewController ();
 				
-				//Util.MyEventStore.RemoveEvents(Util.getEvent(theEvent),EKSpan.ThisEvent,theError.Handle);
-				addController = new EKEventEditViewController ();
+			//    // set the addController's event store to the current event store.
+			//    addController.EventStore = Util.MyEventStore;
+			//    addController.Event = Util.getEvent (theEvent);
 				
-				// set the addController's event store to the current event store.
-				addController.EventStore = Util.MyEventStore;
-				addController.Event = Util.getEvent (theEvent);
+			//    addController.Completed += delegate(object sender, EKEventEditEventArgs e) { this.DismissModalViewControllerAnimated (true); };
 				
-				addController.Completed += delegate(object sender, EKEventEditEventArgs e) { this.DismissModalViewControllerAnimated (true); };
-				
-				try {
-					if (this.ModalViewController == null)
-						this.NavigationController.PresentModalViewController (addController, true);
-				} catch (Exception ex) {
-					//rotatingView.NavigationController.PopViewControllerAnimated(false);
-				}
-			};
+			//    try {
+			//        if (this.ModalViewController == null)
+			//            this.NavigationController.PresentModalViewController (addController, true);
+			//    } catch (Exception ex) {
+			//        //rotatingView.NavigationController.PopViewControllerAnimated(false);
+			//    }
+			//};
 		}
-		
+
+		public void UpdateData()
+		{
+			WeekView.EventsNeedRefresh = true;
+			SingleDayView.EventsNeedRefresh = true;
+			switch (UIDevice.CurrentDevice.Orientation)
+			{
+				case UIDeviceOrientation.Portrait:
+					SingleDayView.reloadDay();
+					break;
+				case UIDeviceOrientation.LandscapeLeft:
+					WeekView.reloadDay();
+					break;
+				case UIDeviceOrientation.LandscapeRight:
+					WeekView.reloadDay();
+					break;
+			}
+		}
+
 		public override bool ShouldAutorotateToInterfaceOrientation (UIInterfaceOrientation toInterfaceOrientation)
 		{
 			if(forceRotate)
@@ -261,46 +279,52 @@ namespace UICalendar
 			NavigationItem.LeftBarButtonItem = _orgLefButton;
 			NavigationItem.Title = "Calendar";
 			_rightButton = new UIBarButtonItem (UIBarButtonSystemItem.Add, delegate {
-				addController = new EKEventEditViewController();	
-				// set the addController's event store to the current event store.
-				addController.EventStore = Util.MyEventStore;
-				addController.Event = EKEvent.FromStore(Util.MyEventStore);
-				addController.Event.StartDate = DateTime.Now;
-				addController.Event.EndDate = DateTime.Now.AddHours(1);
+				throw new NotImplementedException();
+				//if (OnEventClicked != null)
+				//{
+				//    OnEventClicked(
+				//}
+
+				//addController = new EKEventEditViewController();
+				//// set the addController's event store to the current event store.
+				//addController.EventStore = Util.MyEventStore;
+				//addController.Event = EKEvent.FromStore(Util.MyEventStore);
+				//addController.Event.StartDate = DateTime.Now;
+				//addController.Event.EndDate = DateTime.Now.AddHours(1);
 				
-				addController.Completed += delegate(object theSender, EKEventEditEventArgs eva) {
-					switch (eva.Action)
-					{
-					case EKEventEditViewAction.Canceled :
-						case EKEventEditViewAction.Deleted :
-						case EKEventEditViewAction.Saved:
-						this.NavigationController.DismissModalViewControllerAnimated(true);
+				//addController.Completed += delegate(object theSender, EKEventEditEventArgs eva) {
+				//    switch (eva.Action)
+				//    {
+				//    case EKEventEditViewAction.Canceled :
+				//        case EKEventEditViewAction.Deleted :
+				//        case EKEventEditViewAction.Saved:
+				//        this.NavigationController.DismissModalViewControllerAnimated(true);
 						
-						break;
-					}
-				};
-				this.NavigationController.PresentModalViewController (addController, true);
+				//        break;
+				//    }
+				//};
+				//this.NavigationController.PresentModalViewController (addController, true);
 			});
 			
 			NavigationItem.RightBarButtonItem = _rightButton;
 		}
 
-		private void EventsChanged (NSNotification notification)
-		{
-			WeekView.EventsNeedRefresh = true;
-			SingleDayView.EventsNeedRefresh = true;
-			switch (UIDevice.CurrentDevice.Orientation) {
-			case UIDeviceOrientation.Portrait:
-				SingleDayView.reloadDay ();
-				break;
-			case UIDeviceOrientation.LandscapeLeft:
-				WeekView.reloadDay ();
-				break;
-			case UIDeviceOrientation.LandscapeRight:
-				WeekView.reloadDay ();
-				break;
-			}
-		}
+		//private void EventsChanged (NSNotification notification)
+		//{
+		//    WeekView.EventsNeedRefresh = true;
+		//    SingleDayView.EventsNeedRefresh = true;
+		//    switch (UIDevice.CurrentDevice.Orientation) {
+		//    case UIDeviceOrientation.Portrait:
+		//        SingleDayView.reloadDay ();
+		//        break;
+		//    case UIDeviceOrientation.LandscapeLeft:
+		//        WeekView.reloadDay ();
+		//        break;
+		//    case UIDeviceOrientation.LandscapeRight:
+		//        WeekView.reloadDay ();
+		//        break;
+		//    }
+		//}
 
 		public override void SetupNavBar ()
 		{
@@ -341,6 +365,12 @@ namespace UICalendar
 
 		private void HandlePreviousDayTouch (object sender, EventArgs e)
 		{
+			setDate (CurrentDate.AddDays (-1));
+		}
+
+		private void HandleNextDayTouch (object sender, EventArgs e)
+		{
+			setDate (CurrentDate.AddDays (1));
 		}
 
 		private void AddNewEventClicked (object sender, EventArgs e)
@@ -374,13 +404,13 @@ namespace UICalendar
 		public UIColor color { get; set; }
 		internal BlockColumn Column { get; set; }
 		public string eventIdentifier { get; set; }
-		public EKCalendar theCal { get; set; }
+		//public EKCalendar theCal { get; set; }
 		
-		public CalendarDayEventView (EKEvent theEvent)
+		public CalendarDayEventView (CalendarEvent theEvent)
 		{
 			if (theEvent != null) {
-				eventIdentifier = theEvent.EventIdentifier;
-				theCal = theEvent.Calendar;
+				eventIdentifier = ""; // theEvent.EventIdentifier;
+				//theCal = theEvent.Calendar;
 				nsStartDate = theEvent.StartDate;
 				nsEndDate = theEvent.EndDate;
 				startDate = Util.NSDateToDateTime (theEvent.StartDate);
@@ -392,9 +422,10 @@ namespace UICalendar
 				}
 				Title = theEvent.Title;
 				location = theEvent.Location;
-				if (theEvent.Calendar != null) {
-					color = new UIColor (theEvent.Calendar.CGColor);
-				}
+				color = UIColor.Blue;
+				//if (theEvent.Calendar != null) {
+				//    color = new UIColor (theEvent.Calendar.CGColor);
+				//}
 			}
 			Frame = new RectangleF (0, 0, 0, 0);
 			setupCustomInitialisation ();
@@ -557,8 +588,11 @@ namespace UICalendar
 		private UISegmentedControl calViewSwitcher;
 		private UIBarButtonItem todayBtn;
 
-		public CalendarDayTimelineView (RectangleF rect, float tabBarHeight)
+		private IEventsSource dataSource;
+
+		public CalendarDayTimelineView (RectangleF rect, float tabBarHeight, IEventsSource dataSource)
 		{
+			this.dataSource = dataSource;
 			orgRect = rect;
 			NavBarHeight = UIApplication.SharedApplication.StatusBarFrame.Height;
 			Frame = rect;
@@ -566,8 +600,9 @@ namespace UICalendar
 			setupCustomInitialisation ();
 		}
 
-		public CalendarDayTimelineView ()
+		public CalendarDayTimelineView (IEventsSource dataSource)
 		{
+			this.dataSource = dataSource;
 			var screenFrame = UIScreen.MainScreen.Bounds;
 			NavBarHeight = UIApplication.SharedApplication.StatusBarFrame.Height;
 			Frame = new RectangleF (0, 0, screenFrame.Width, screenFrame.Height);
@@ -838,7 +873,7 @@ namespace UICalendar
 					monthEvents.Clear ();
 					
 					// endDate is 1 day = 60*60*24 seconds = 86400 seconds from startDate	
-					foreach (EKEvent theEvent in Util.FetchEvents (currentMonth.AddMonths (-1), currentMonth.AddMonths (1))) {
+					foreach (var theEvent in dataSource.GetEvents(currentMonth.AddMonths (-1), currentMonth.AddMonths (1))) {
 						monthEvents.Add (new CalendarDayEventView (theEvent));
 					}
 					EventsNeedRefresh = false;
@@ -1007,9 +1042,9 @@ namespace UICalendar
 			/*
 			DateTime dateToScrollTo;
 			if (currentDate == DateTime.Today)
-			    dateToScrollTo = DateTime.Now;
+				dateToScrollTo = DateTime.Now;
 			else
-			    dateToScrollTo = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 8, 0, 0, 0);
+				dateToScrollTo = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 8, 0, 0, 0);
 			ScrollToTime(dateToScrollTo);
 			*/			
 		
@@ -1180,9 +1215,9 @@ namespace UICalendar
 	{
 		private TrueWeekView weekView;
 
-		public TrueWeekViewController (DateTime date)
+		public TrueWeekViewController (DateTime date, IEventsSource dataSource)
 		{
-			weekView = new TrueWeekView (date) { Frame = new RectangleF (0, 0, 480, 220) };
+			weekView = new TrueWeekView (date, dataSource) { Frame = new RectangleF (0, 0, 480, 220) };
 			SetCurrentDate (date);
 			View.AddSubview (weekView);
 		}
@@ -1217,8 +1252,11 @@ namespace UICalendar
 		public EventClicked OnEventClicked;
 		private TimeView rowHeader;
 
-		public TrueWeekView (DateTime date)
+		private IEventsSource dataSource;
+
+		public TrueWeekView(DateTime date, IEventsSource dataSource)
 		{
+			this.dataSource = dataSource;
 			SetDayOfWeek (date);
 			BackgroundColor = UIColor.White;
 			SetupWindow ();
@@ -1317,7 +1355,7 @@ namespace UICalendar
 						events = new List<CalendarDayEventView> ();
 						
 						DateTime endDate = FirstDayOfWeek.AddDays (6).AddSeconds (86400);
-						foreach (EKEvent theEvent in Util.FetchEvents (FirstDayOfWeek, endDate)) {
+						foreach (var theEvent in dataSource.GetEvents(FirstDayOfWeek, endDate)) {
 							events.Add (new CalendarDayEventView (theEvent));
 						}
 						
@@ -1641,12 +1679,12 @@ namespace UICalendar
 				/*
 				
 				weekTopLevelLayer tempTiledLayer = (weekTopLevelLayer)this.Layer;
-		        tempTiledLayer.LevelsOfDetail = 5;
+				tempTiledLayer.LevelsOfDetail = 5;
 				tempTiledLayer.FirstDayOfWeek = parent.FirstDayOfWeek;
 				tempTiledLayer.TotalWidth = TotalWidth;
 				tempTiledLayer.DayWidth = DayWidth;
-		        tempTiledLayer.LevelsOfDetailBias = 2;
-		        */				
+				tempTiledLayer.LevelsOfDetailBias = 2;
+				*/				
 			
 						public TrueWeekView parent { get; set; }
 

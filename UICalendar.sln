@@ -33,6 +33,6 @@ Global
 		{D0F4419D-D6DC-4E5A-9449-06CFFDA48C24}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = Sample\Sample.csproj
+		StartupItem = UICalendar\UICalendar.csproj
 	EndGlobalSection
 EndGlobal

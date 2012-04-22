@@ -73,15 +73,28 @@ namespace UICalendar
 		private MonthGridView _monthGridView;
 		private UIButton _leftButton, _rightButton;
 		public Action SizeChanged;
+		private IEventsSource dataSource;
 
 		public SizeF Size {
 			get { return new SizeF (_scrollView.Frame.Size.Width, _scrollView.Frame.Size.Height + _scrollView.Frame.Y + (ShowToolBar ? toolbar.Frame.Height : 0)); }
 		}
-
+		
 		public CalendarMonthView () : this(DateTime.Today)
 		{
 			
 		}
+
+		public CalendarMonthView (IEventsSource dataSource) : this(DateTime.Today)
+		{
+			this.dataSource = dataSource;
+		}
+
+		public CalendarMonthView (DateTime currentDate, bool showToolBar, IEventsSource dataSource)
+			: this(currentDate, showToolBar)
+		{
+			this.dataSource = dataSource;
+		}
+
 		public CalendarMonthView (DateTime currentDate, bool showToolBar) : base(new RectangleF (0, 0, 320, 260))
 		{
 			ShowToolBar = showToolBar;
@@ -92,15 +105,18 @@ namespace UICalendar
 			CurrentMonthYear = new DateTime (CurrentDate.Year, CurrentDate.Month, 1);
 			LayoutSubviews ();
 		}
-		public CalendarMonthView (DateTime currentDate) : base(new RectangleF (0, 0, 320, 260))
+
+		public CalendarMonthView (DateTime currentDate)
+			: this(currentDate, true)
 		{
-			if (currentDate.Year < 2010)
-				CurrentDate = DateTime.Today;
-			else
-				CurrentDate = currentDate;
-			CurrentMonthYear = new DateTime (CurrentDate.Year, CurrentDate.Month, 1);
-			LayoutSubviews ();
 		}
+
+		public CalendarMonthView(DateTime currentDate, IEventsSource dataSource)
+			: this(currentDate, true)
+		{
+			this.dataSource = dataSource;
+		}
+
 		public CalendarMonthView (DateTime currentDate, DateTime[] markedDays) : base(new RectangleF (0, 0, 320, 260))
 		{
 			Console.WriteLine ("Date Received");

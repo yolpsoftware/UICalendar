@@ -36,9 +36,7 @@
     <Reference Include="MonoTouch.Dialog-1" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup>
-    <Folder Include="Images\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="Images\Calendar\datecell.png" />
     <Content Include="Images\Calendar\datecellselected.png" />
@@ -52,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CalendarViews.cs" />
+    <Compile Include="IEventsSource.cs" />
     <Compile Include="RotatingViewController.cs" />
     <Compile Include="ScrollViewWithHeader.cs" />
     <Compile Include="CalendarMonthView.cs" />

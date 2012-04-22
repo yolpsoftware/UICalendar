@@ -22,7 +22,7 @@ namespace UICalendar
 	[Register("RotatingViewController")]
 	public abstract partial class RotatingViewController : UIViewController
 	{
-		public NSObject notificationObserver;
+		//public NSObject notificationObserver;
 
 		public RotatingViewController (IntPtr handle) : base(handle)
 		{
@@ -40,11 +40,13 @@ namespace UICalendar
 			initialize ();
 		}
 
-		public RotatingViewController () : base()
+		public RotatingViewController()
+			: base()
 		{
-			initialize ();
+			initialize();
 		}
-		private void initialize ()
+
+		private void initialize()
 		{
 		}
 
