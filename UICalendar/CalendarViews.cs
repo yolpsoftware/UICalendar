@@ -393,6 +393,7 @@ namespace UICalendar
 		public EventClicked OnEventDoubleClicked;
 		public object ParentView;
 		private bool twoFingerTapIsPossible = true;
+		public CalendarEvent Event { get; set; }
 		public int id { get; set; }
 		public DateTime startDate { get; set; }
 		public DateTime endDate { get; set; }
@@ -408,6 +409,7 @@ namespace UICalendar
 		
 		public CalendarDayEventView (CalendarEvent theEvent)
 		{
+			Event = theEvent;
 			if (theEvent != null) {
 				eventIdentifier = ""; // theEvent.EventIdentifier;
 				//theCal = theEvent.Calendar;
@@ -583,10 +585,10 @@ namespace UICalendar
 		public bool ShouldRefreshUI { get; set; }
 
 		// bottom tab bar
-		private const float bottomBarH = 40;
-		private UIToolbar bottomBar;
-		private UISegmentedControl calViewSwitcher;
-		private UIBarButtonItem todayBtn;
+		//private const float bottomBarH = 40;
+		//private UIToolbar bottomBar;
+		//private UISegmentedControl calViewSwitcher;
+		//private UIBarButtonItem todayBtn;
 
 		private IEventsSource dataSource;
 
@@ -694,7 +696,7 @@ namespace UICalendar
 			// Initialization code
 			// events = new List<CalendarDayEventView>();
 			// Add main scroll view
-			var viewFrame = new RectangleF (Bounds.X, Bounds.Y, CurrentWidth, CurrentHeight - bottomBarH);
+			var viewFrame = new RectangleF (Bounds.X, Bounds.Y, CurrentWidth, CurrentHeight); // - bottomBarH);
 			dayView = new UIView (viewFrame);
 			monthView = new UIView (viewFrame);
 			weekView = new UIView (viewFrame);
@@ -716,7 +718,7 @@ namespace UICalendar
 				//AddSubview (weekView);
 				break;
 			}
-			AddSubview (bottomBar);
+			//AddSubview (bottomBar);
 			LoadButtons ();
 			
 			scrollView.AddSubview (getTimeLineView ());
@@ -763,7 +765,7 @@ namespace UICalendar
 
 		private UIView getScrollView ()
 		{
-			parentScrollView = new UIView (new RectangleF (Bounds.X, Bounds.Y + 44, CurrentWidth, CurrentHeight - 44 - bottomBarH));
+			parentScrollView = new UIView (new RectangleF (Bounds.X, Bounds.Y + 44, CurrentWidth, CurrentHeight - 44)); // - bottomBarH));
 			scrollView = new UIScrollView (parentScrollView.Bounds);
 			scrollView.ContentSize = new SizeF (CurrentWidth, consts.TIMELINE_HEIGHT);
 			scrollView.ScrollEnabled = true;
@@ -786,29 +788,29 @@ namespace UICalendar
 		private void setBottomToolBar ()
 		{
 			var scrollFrame = parentScrollView.Frame;
-			bottomBar = new UIToolbar (new RectangleF (scrollFrame.X, scrollFrame.Height, scrollFrame.Width, bottomBarH)){TintColor = UIColor.Black};
-			calViewSwitcher = new UISegmentedControl (new RectangleF (scrollFrame.Width / 2 - 90, 5, 180, 28));
-			calViewSwitcher.InsertSegment ("Day", 0, false);
-			calViewSwitcher.InsertSegment ("Month", 1, false);
-			calViewSwitcher.InsertSegment ("Week", 2, false);
-			calViewSwitcher.ControlStyle = UISegmentedControlStyle.Bar;
-			calViewSwitcher.SelectedSegment = Settings.lastCal;
-			calViewSwitcher.ValueChanged += delegate {Settings.lastCal = calViewSwitcher.SelectedSegment; ViewSwitched (); };
-			calViewSwitcher.TintColor = UIColor.Black;
+			//bottomBar = new UIToolbar (new RectangleF (scrollFrame.X, scrollFrame.Height, scrollFrame.Width, bottomBarH)){TintColor = UIColor.Black};
+			//calViewSwitcher = new UISegmentedControl (new RectangleF (scrollFrame.Width / 2 - 90, 5, 180, 28));
+			//calViewSwitcher.InsertSegment ("Day", 0, false);
+			//calViewSwitcher.InsertSegment ("Month", 1, false);
+			//calViewSwitcher.InsertSegment ("Week", 2, false);
+			//calViewSwitcher.ControlStyle = UISegmentedControlStyle.Bar;
+			//calViewSwitcher.SelectedSegment = Settings.lastCal;
+			//calViewSwitcher.ValueChanged += delegate {Settings.lastCal = calViewSwitcher.SelectedSegment; ViewSwitched (); };
+			//calViewSwitcher.TintColor = UIColor.Black;
 			//calViewSwitcher.Selected
-			todayBtn = new UIBarButtonItem ("Today", UIBarButtonItemStyle.Bordered, delegate {
-				curScrollH = GetStartPosition (DateTime.Now);
-				curScrollW = 0;
-				SetDate (DateTime.Today);
-			});
+			//todayBtn = new UIBarButtonItem ("Today", UIBarButtonItemStyle.Bordered, delegate {
+			//    curScrollH = GetStartPosition (DateTime.Now);
+			//    curScrollW = 0;
+			//    SetDate (DateTime.Today);
+			//});
 			//UIToolbar toolbar = new UIToolbar(new RectangleF(5,0,75,35));
 			//toolbar.TintColor = UIColor.Clear;
 			//toolbar.BackgroundColor = UIColor.Clear;
 			//toolbar.SetItems(new UIBarButtonItem[]{todayBtn},false);
-			bottomBar.SetItems (new UIBarButtonItem[] { todayBtn }, false);
+			//bottomBar.SetItems (new UIBarButtonItem[] { todayBtn }, false);
 			//bottomBar.AddSubview(toolbar);	
 			
-			bottomBar.AddSubview (calViewSwitcher);
+			//bottomBar.AddSubview (calViewSwitcher);
 		}
 
 		private void ViewSwitched ()
@@ -1006,7 +1008,7 @@ namespace UICalendar
 		
 			var dailyEvents = monthEvents.Where (day => (day.startDate.Date == currentDate || day.endDate.Date == currentDate) && day.AllDay).ToList ();
 			
-			var baseFrame = new RectangleF (Bounds.X, Bounds.Y + 44, CurrentWidth, CurrentHeight - 44 - bottomBarH);
+			var baseFrame = new RectangleF (Bounds.X, Bounds.Y + 44, CurrentWidth, CurrentHeight - 44); // - bottomBarH);
 			if(dailyEvents.Count == 0)
 			{
 				parentScrollView.Frame = baseFrame;
@@ -1094,7 +1096,7 @@ namespace UICalendar
 		{
 			var dvc = new DialogViewController (UITableViewStyle.Plain, null);
 			dvc.Style = UITableViewStyle.Plain;
-			dvc.View.Frame = new RectangleF (0, rect.Height + rect.Y, rect.Width, monthView.Frame.Height - rect.Height - bottomBarH);
+			dvc.View.Frame = new RectangleF (0, rect.Height + rect.Y, rect.Width, monthView.Frame.Height - rect.Height); // - bottomBarH);
 			return dvc;
 		}
 		public RootElement getMonthDayEvents ()

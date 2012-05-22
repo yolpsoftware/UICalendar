@@ -45,3 +45,4 @@ BASE.*
 
 /nunit-result.xml
 *.dat
+/UICalendar/notes.txt

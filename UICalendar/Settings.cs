@@ -28,7 +28,8 @@ namespace UICalendar
 			
 		public static int lastCal
 		{
-			get {return prefs.IntForKey("lastCal");}
+			//get {return prefs.IntForKey("lastCal");}
+			get { return 1; }
 			set {prefs.SetInt(value,"lastCal");prefs.Synchronize();}
 		}
 	

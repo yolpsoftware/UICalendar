@@ -47,6 +47,7 @@
     <Content Include="Images\Calendar\todayselected.png" />
     <Content Include="Images\Calendar\topbar.png" />
     <Content Include="Images\shadow.png" />
+    <Content Include="notes.txt" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CalendarViews.cs" />
