@@ -33,6 +33,8 @@ namespace UICalendar
 		public bool AllDay { get; set; }
 
 		public string Location { get; set; }
+
+		public object CustomObject { get; set; }
 	}
 }
 
