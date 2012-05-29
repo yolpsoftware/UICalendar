@@ -92,7 +92,7 @@ namespace UICalendar
 				lblSub = new UILabel { TextAlignment = UITextAlignment.Left, Text = parent.TheEvent.location, Font = subFont, TextColor = UIColor.Gray, BackgroundColor = UIColor.Clear };
 				
 				ContentView.Add (circleView);
-				ContentView.Add (timeSubLabel);
+				//ContentView.Add (timeSubLabel);
 				ContentView.Add (timeLabel);
 				ContentView.Add (label);
 				ContentView.Add (lblSub);
@@ -106,26 +106,26 @@ namespace UICalendar
 			public void setupTimeLabels ()
 			{
 				timeLabel = new UILabel { Font = MonthEventElement.timeFont, TextAlignment = UITextAlignment.Right, BackgroundColor = UIColor.Clear };
-				timeSubLabel = new UILabel { Font = MonthEventElement.timeSubFont, TextAlignment = UITextAlignment.Center, TextColor = UIColor.Gray, BackgroundColor = UIColor.Clear };
+				//timeSubLabel = new UILabel { Font = MonthEventElement.timeSubFont, TextAlignment = UITextAlignment.Center, TextColor = UIColor.Gray, BackgroundColor = UIColor.Clear };
 				
-				if (parent.TheEvent.AllDay) {
-					timeLabel.Text = "all-day";
-					return;
-				}
-				var time = parent.TheEvent.startDate.ToShortTimeString ();
-				if (time == "12:00 PM") {
-					timeLabel.Text = "NOON";
-					return;
-				}
+				//if (parent.TheEvent.AllDay) {
+				//	timeLabel.Text = "all-day";
+				//	return;
+				//}
+				var time = parent.TheEvent.startDate.ToLocalTime().ToString("t");
+				//if (time == "12:00 PM") {
+				//	timeLabel.Text = "NOON";
+				//	return;
+				//}
 				
 				
-				timeHasSubLabel = true;
-				var timeParts = time.Split (char.Parse (" "));
-				var timeOnly = timeParts[0];
-				var timeOnlyParts = timeOnly.Split (char.Parse (":"));
-				
-				timeLabel.Text = timeOnlyParts[1] == "00" ? timeOnlyParts[0] : timeOnly;
-				timeSubLabel.Text = timeParts[1];
+				//timeHasSubLabel = true;
+				//var timeParts = time.Split (char.Parse (" "));
+				//var timeOnly = timeParts[0];
+				//var timeOnlyParts = timeOnly.Split (char.Parse (":"));
+
+				timeLabel.Text = time; //timeOnlyParts[1] == "00" ? timeOnlyParts[0] : timeOnly;
+				//timeSubLabel.Text = timeParts[1];
 				
 			}
 

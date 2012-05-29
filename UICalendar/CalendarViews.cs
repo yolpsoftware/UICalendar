@@ -141,6 +141,7 @@ namespace UICalendar
 	{
 		private UIBarButtonItem _leftButton, _rightButton, _orgLefButton;
 		public EventClicked OnEventClicked, OnEventDoubleClicked;
+		public DateChanged OnAddEvent;
 		// public EventClicked OnEventDoubleClicked;
 		public DateTime CurrentDate { get; internal set; }
 		public DateTime FirstDayOfWeek { get; set; }
@@ -278,8 +279,13 @@ namespace UICalendar
 			//  _leftButton = new UIBarButtonItem("Calendars", UIBarButtonItemStyle.Bordered, HandlePreviousDayTouch);
 			NavigationItem.LeftBarButtonItem = _orgLefButton;
 			NavigationItem.Title = "Calendar";
-			_rightButton = new UIBarButtonItem (UIBarButtonSystemItem.Add, delegate {
-				throw new NotImplementedException();
+			_rightButton = new UIBarButtonItem (UIBarButtonSystemItem.Add, delegate
+			{
+				if (OnAddEvent != null)
+				{
+					OnAddEvent(this.CurrentDate);
+				}
+
 				//if (OnEventClicked != null)
 				//{
 				//    OnEventClicked(
@@ -342,7 +348,7 @@ namespace UICalendar
 			}
 		}
 
-		private void setDate (DateTime date)
+		public void setDate (DateTime date)
 		{
 			CurrentDate = date;
 			WeekView.SetDayOfWeek (CurrentDate);
@@ -875,7 +881,7 @@ namespace UICalendar
 					monthEvents.Clear ();
 					
 					// endDate is 1 day = 60*60*24 seconds = 86400 seconds from startDate	
-					foreach (var theEvent in dataSource.GetEvents(currentMonth.AddMonths (-1), currentMonth.AddMonths (1))) {
+					foreach (var theEvent in dataSource.GetEvents(currentMonth.AddMonths (-1), currentMonth.AddMonths (2))) {
 						monthEvents.Add (new CalendarDayEventView (theEvent));
 					}
 					EventsNeedRefresh = false;
@@ -1057,7 +1063,7 @@ namespace UICalendar
 		{
 			calMonthView = new CalendarMonthView (currentDate, monthEvents.Select (x => x.startDate.Date).ToArray ());
 			eventDvc = buildMonthSingleDayEventList (calMonthView.Frame);
-			calMonthView.IsDayMarkedDelegate += date => { return monthEvents.Where (x => x.startDate.Date == date.Date || x.endDate == date.Date).Count () > 0; };
+			calMonthView.IsDayMarkedDelegate += date => { return monthEvents.Where (x => x.startDate.Date >= date.Date && x.startDate < date.Date.AddDays(1)).Any(); };
 			calMonthView.OnDateSelected += date =>
 			{
 				//SelectedView = 0;

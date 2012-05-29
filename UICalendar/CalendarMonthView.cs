@@ -98,10 +98,7 @@ namespace UICalendar
 		public CalendarMonthView (DateTime currentDate, bool showToolBar) : base(new RectangleF (0, 0, 320, 260))
 		{
 			ShowToolBar = showToolBar;
-			if (currentDate.Year < 2010)
-				CurrentDate = DateTime.Today;
-			else
-				CurrentDate = currentDate;
+			CurrentDate = currentDate;
 			CurrentMonthYear = new DateTime (CurrentDate.Year, CurrentDate.Month, 1);
 			LayoutSubviews ();
 		}
@@ -121,10 +118,7 @@ namespace UICalendar
 		{
 			Console.WriteLine ("Date Received");
 			MarkedDay = markedDays;
-			if (currentDate.Year < 2010)
-				CurrentDate = DateTime.Today;
-			else
-				CurrentDate = currentDate;
+			CurrentDate = currentDate;
 			CurrentMonthYear = new DateTime (CurrentDate.Year, CurrentDate.Month, 1);
 			LayoutSubviews ();
 		}
@@ -379,7 +373,8 @@ namespace UICalendar
 		internal bool isDayMarker (DateTime date)
 		{
 			if (IsDayMarkedDelegate != null) {
-				return IsDayMarkedDelegate (date);
+				var result = IsDayMarkedDelegate (date);
+				return result;
 			}
 			if (MarkedDay != null) {
 				var isMarked = MarkedDay.Contains (date.Date);
@@ -412,12 +407,8 @@ namespace UICalendar
 
 		public void BuildGrid ()
 		{
-			DateTime previousMonth;
-			try {
-				previousMonth = _currentMonth.AddMonths (-1);
-			} catch {
-				previousMonth = _currentMonth;
-			}
+			var previousMonth = _currentMonth.AddMonths (-1);
+			var nextMonth = _currentMonth.AddMonths(1);
 			var daysInPreviousMonth = DateTime.DaysInMonth (previousMonth.Year, previousMonth.Month);
 			var daysInMonth = DateTime.DaysInMonth (_currentMonth.Year, _currentMonth.Month);
 			weekdayOfFirst = (int)_currentMonth.DayOfWeek;
@@ -425,7 +416,7 @@ namespace UICalendar
 			
 			// build last month's days
 			for (int i = 1; i <= weekdayOfFirst; i++) {
-				var viewDay = new DateTime (_currentMonth.Year, _currentMonth.Month, i);
+				var viewDay = new DateTime (previousMonth.Year, previousMonth.Month, daysInPreviousMonth - weekdayOfFirst + i);
 				var dayView = new CalendarDayView { Frame = new RectangleF ((i - 1) * 46 - 1, 0, 47, 45), Text = lead.ToString (), Marked = _calendarMonthView.isDayMarker (viewDay) };
 				AddSubview (dayView);
 				_dayTiles.Add (dayView);
@@ -457,7 +448,7 @@ namespace UICalendar
 			if (position != 1) {
 				int dayCounter = 1;
 				for (int i = position; i < 8; i++) {
-					var viewDay = new DateTime (_currentMonth.Year, _currentMonth.Month, i);
+					var viewDay = new DateTime(nextMonth.Year, nextMonth.Month, dayCounter);
 					var dayView = new CalendarDayView { Frame = new RectangleF ((i - 1) * 46 - 1, line * 44, 47, 45), Text = dayCounter.ToString (), Marked = _calendarMonthView.isDayMarker (viewDay) };
 					AddSubview (dayView);
 					_dayTiles.Add (dayView);
