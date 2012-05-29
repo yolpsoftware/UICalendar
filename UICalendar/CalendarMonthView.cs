@@ -190,23 +190,30 @@ namespace UICalendar
 
 		private void HandlePreviousMonthTouch (object sender, EventArgs e)
 		{
-			MoveCalendarMonths (false, true);
+			MoveCalendarMonths (false, true, _monthGridView.SelectedDate.Day);
 		}
 		private void HandleNextMonthTouch (object sender, EventArgs e)
 		{
-			MoveCalendarMonths (true, true);
+			MoveCalendarMonths(true, true, _monthGridView.SelectedDate.Day);
 		}
 
-		public void MoveCalendarMonths (bool upwards, bool animated)
+		public void MoveCalendarMonths (bool upwards, bool animated, int newSelection)
 		{
 			CurrentMonthYear = CurrentMonthYear.AddMonths (upwards ? 1 : -1);
 			if (MonthChanged != null)
 				MonthChanged (CurrentMonthYear);
 			UserInteractionEnabled = false;
-			
-			var gridToMove = CreateNewGrid (CurrentMonthYear);
+
+			if (newSelection > DateTime.DaysInMonth(CurrentMonthYear.Year, CurrentMonthYear.Month))
+			{
+				newSelection = DateTime.DaysInMonth(CurrentMonthYear.Year, CurrentMonthYear.Month);
+			}
+
+			var newSelectedDate = CurrentMonthYear.AddDays(newSelection - 1);
+
+			var gridToMove = CreateNewGrid (CurrentMonthYear, newSelectedDate);
 			var pointsToMove = (upwards ? 0 + _monthGridView.Lines : 0 - _monthGridView.Lines) * 44;
-			
+
 			if (upwards && gridToMove.weekdayOfFirst == 0)
 				pointsToMove += 44;
 			if (!upwards && _monthGridView.weekdayOfFirst == 0)
@@ -245,7 +252,9 @@ namespace UICalendar
 				UIView.CommitAnimations ();
 			
 			_monthGridView = gridToMove;
-			
+			if (OnDateSelected != null)
+				OnDateSelected(_monthGridView.SelectedDate);
+
 			UserInteractionEnabled = true;
 			if (oldFrame != _scrollView.Frame && SizeChanged != null)
 			{
@@ -266,7 +275,7 @@ namespace UICalendar
 				MonthChanged (CurrentMonthYear);
 			UserInteractionEnabled = false;
 			
-			var gridToMove = CreateNewGrid (CurrentMonthYear);
+			var gridToMove = CreateNewGrid (CurrentMonthYear, date);
 			var pointsToMove = (upwards ? 0 + _monthGridView.Lines : 0 - _monthGridView.Lines) * 44;
 			
 			if (upwards && gridToMove.weekdayOfFirst == 0)
@@ -314,9 +323,9 @@ namespace UICalendar
 			}
 		}
 
-		private MonthGridView CreateNewGrid (DateTime date)
+		private MonthGridView CreateNewGrid (DateTime date, DateTime selectedDate)
 		{
-			var grid = new MonthGridView (this, date, CurrentDate);
+			var grid = new MonthGridView (this, date, selectedDate);
 			grid.BuildGrid ();
 			grid.Frame = new RectangleF (0, 0, 320, 400);
 			return grid;
@@ -324,7 +333,7 @@ namespace UICalendar
 
 		private void LoadInitialGrids ()
 		{
-			_monthGridView = CreateNewGrid (CurrentMonthYear);
+			_monthGridView = CreateNewGrid (CurrentMonthYear, DateTime.Now.Date);
 			
 			var rect = _scrollView.Frame;
 			rect.Size = new SizeF { Height = (_monthGridView.Lines + 1) * 44, Width = rect.Size.Width };
@@ -431,7 +440,8 @@ namespace UICalendar
 				var viewDay = new DateTime (_currentMonth.Year, _currentMonth.Month, i);
 				var dayView = new CalendarDayView { Frame = new RectangleF ((position - 1) * 46 - 1, line * 44, 47, 45), Today = (_currentDay.Date == viewDay.Date), Text = i.ToString (), Active = true, Tag = i, Marked = _calendarMonthView.isDayMarker (viewDay), Selected = (SelectedDate.Day == i) };
 				
-				if (dayView.Selected)
+				//if (dayView.Selected)
+				if (viewDay.Day == SelectedDate.Day)
 					SelectedDayView = dayView;
 				
 				AddSubview (dayView);
@@ -468,9 +478,9 @@ namespace UICalendar
 		{
 			base.TouchesBegan (touches, evt);
 			if (SelectDayView ((UITouch)touches.AnyObject)) {
-				SelectedDate = new DateTime (_currentMonth.Year, _currentMonth.Month, SelectedDayView.Tag);
+				SelectedDate = new DateTime (_currentMonth.Year, _currentMonth.Month, SelectedDate.Day);
 				if (_calendarMonthView.OnDateSelected != null)
-					_calendarMonthView.OnDateSelected (new DateTime (_currentMonth.Year, _currentMonth.Month, SelectedDayView.Tag));
+					_calendarMonthView.OnDateSelected (SelectedDate); //new DateTime (_currentMonth.Year, _currentMonth.Month, SelectedDayView.Tag));
 			}
 		}
 
@@ -478,9 +488,9 @@ namespace UICalendar
 		{
 			base.TouchesMoved (touches, evt);
 			if (SelectDayView ((UITouch)touches.AnyObject)) {
-				SelectedDate = new DateTime (_currentMonth.Year, _currentMonth.Month, SelectedDayView.Tag);
+				SelectedDate = new DateTime (_currentMonth.Year, _currentMonth.Month, SelectedDate.Day);
 				if (_calendarMonthView.OnDateSelected != null)
-					_calendarMonthView.OnDateSelected (new DateTime (_currentMonth.Year, _currentMonth.Month, SelectedDayView.Tag));
+					_calendarMonthView.OnDateSelected (SelectedDate); //(new DateTime (_currentMonth.Year, _currentMonth.Month, SelectedDayView.Tag));
 			}
 		}
 
@@ -489,8 +499,15 @@ namespace UICalendar
 			base.TouchesEnded (touches, evt);
 			if (_calendarMonthView.OnFinishedDateSelection == null)
 				return;
-			SelectedDate = new DateTime (_currentMonth.Year, _currentMonth.Month, SelectedDayView.Tag);
-			_calendarMonthView.OnFinishedDateSelection (new DateTime (_currentMonth.Year, _currentMonth.Month, SelectedDayView.Tag));
+			SelectedDate = new DateTime (_currentMonth.Year, _currentMonth.Month, SelectedDate.Day);
+			_calendarMonthView.OnFinishedDateSelection (SelectedDate); //(new DateTime (_currentMonth.Year, _currentMonth.Month, SelectedDayView.Tag));
+		}
+
+		public void SetSelectedDate(DateTime newDate)
+		{
+			SelectedDate = newDate;
+			if (_calendarMonthView.OnDateSelected != null)
+				_calendarMonthView.OnDateSelected(SelectedDate);
 		}
 
 		private bool SelectDayView (UITouch touch)
@@ -504,23 +521,25 @@ namespace UICalendar
 			var newSelectedDayView = _dayTiles[index];
 			if (newSelectedDayView == SelectedDayView)
 				return false;
-			
-			if (!newSelectedDayView.Active && touch.Phase != UITouchPhase.Moved) {
+
+			SelectedDayView.Selected = false;
+			this.BringSubviewToFront(newSelectedDayView);
+			newSelectedDayView.Selected = true;
+
+			if (!newSelectedDayView.Active && touch.Phase != UITouchPhase.Moved)
+			{
 				var day = int.Parse (newSelectedDayView.Text);
 				if (day > 15)
-					_calendarMonthView.MoveCalendarMonths (false, true);
+					_calendarMonthView.MoveCalendarMonths (false, true, day);
 				else
-					_calendarMonthView.MoveCalendarMonths (true, true);
+					_calendarMonthView.MoveCalendarMonths (true, true, day);
 				return false;
 			} else if (!newSelectedDayView.Active) {
 				return false;
 			}
 			
-			SelectedDayView.Selected = false;
-			this.BringSubviewToFront (newSelectedDayView);
-			newSelectedDayView.Selected = true;
-			
 			SelectedDayView = newSelectedDayView;
+			SelectedDate = new DateTime(SelectedDate.Year, SelectedDate.Month, SelectedDayView.Tag);
 			SetNeedsDisplay ();
 			return true;
 		}
