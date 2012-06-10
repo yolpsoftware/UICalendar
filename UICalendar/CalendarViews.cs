@@ -188,7 +188,10 @@ namespace UICalendar
 					}
 				}
 			};
-			SingleDayView.dateChanged += theDate => { CurrentDate = theDate; };
+			SingleDayView.dateChanged += theDate =>
+			{
+				CurrentDate = theDate;
+			};
 
 			//this.OnEventClicked += theEvent =>
 			//{
@@ -214,6 +217,7 @@ namespace UICalendar
 		{
 			WeekView.EventsNeedRefresh = true;
 			SingleDayView.EventsNeedRefresh = true;
+			SingleDayView.ShouldRefreshUI = true;
 			switch (UIDevice.CurrentDevice.Orientation)
 			{
 				case UIDeviceOrientation.Portrait:
@@ -352,7 +356,7 @@ namespace UICalendar
 		{
 			CurrentDate = date;
 			WeekView.SetDayOfWeek (CurrentDate);
-			SingleDayView.SetDate (CurrentDate);
+			SingleDayView.SetDateAndReloadDay (CurrentDate);
 			if (UIDevice.CurrentDevice.Orientation != UIDeviceOrientation.Portrait) {
 				NavigationItem.Title = WeekView.FirstDayOfWeek.ToString("MMM dd yyyy") + " - " + WeekView.FirstDayOfWeek.AddDays (6).ToString("MMM dd yyyy");
 				WeekView.ReDraw ();
@@ -560,6 +564,11 @@ namespace UICalendar
 			// Restore the context state
 			context.RestoreState ();
 		}
+
+		public override string ToString()
+		{
+			return "CalendarDayEventView " + startDate.ToString("s");
+		}
 	}
 
 	public class CalendarDayTimelineView : UIView
@@ -679,9 +688,19 @@ namespace UICalendar
 			SetDate (currentDate.AddDays (1));
 		}
 
+		public void SetDateAndReloadDay (DateTime date)
+		{
+			SetDate(date);
+			eventDvc.TableView.RemoveFromSuperview();
+			eventDvc = buildMonthSingleDayEventList(new RectangleF(calMonthView.Frame.Location, calMonthView.Size));
+			eventDvc.Root = getMonthDayEvents();
+			monthView.AddSubview(eventDvc.TableView);
+			monthView.BringSubviewToFront(calMonthView);
+		}
+
 		public void SetDate (DateTime date)
 		{
-			currentDate = date;
+			currentDate = date.Date;
 			var newMonth = new DateTime (date.Year, date.Month, 1);
 			if (currentMonth != newMonth)
 				EventsNeedRefresh = true;
@@ -1067,13 +1086,7 @@ namespace UICalendar
 			calMonthView.OnDateSelected += date =>
 			{
 				//SelectedView = 0;
-				SetDate (date);
-				eventDvc.TableView.RemoveFromSuperview ();
-				eventDvc = buildMonthSingleDayEventList (new RectangleF(calMonthView.Frame.Location, calMonthView.Size));
-				eventDvc.Root = getMonthDayEvents ();
-				monthView.AddSubview (eventDvc.TableView);
-				monthView.BringSubviewToFront (calMonthView);
-				
+				SetDateAndReloadDay (date);
 			};
 			
 			eventDvc.Root = getMonthDayEvents ();

@@ -74,6 +74,7 @@ namespace UICalendar
 		{
 			MonthEventElement parent;
 			UIView circleView;
+			UIImageView image;
 			UILabel timeLabel;
 			UILabel timeSubLabel;
 			UILabel label;
@@ -85,6 +86,7 @@ namespace UICalendar
 				this.parent = parent;
 				
 				circleView = new Circle { Color = parent.TheEvent.color, BackgroundColor = UIColor.Clear };
+				image = new UIImageView(UIImage.FromFile("Images/Calendar/leftarrow.png"));
 				setupTimeLabels ();
 				
 				BackgroundColor = UIColor.Clear;
@@ -92,6 +94,7 @@ namespace UICalendar
 				lblSub = new UILabel { TextAlignment = UITextAlignment.Left, Text = parent.TheEvent.location, Font = subFont, TextColor = UIColor.Gray, BackgroundColor = UIColor.Clear };
 				
 				ContentView.Add (circleView);
+				ContentView.Add(image);
 				//ContentView.Add (timeSubLabel);
 				ContentView.Add (timeLabel);
 				ContentView.Add (label);
@@ -146,6 +149,11 @@ namespace UICalendar
 				frame.X = margin;
 				frame.Width = circleWidth;
 				circleView.Frame = frame;
+				var imageFrame = frame;
+				imageFrame.Width = image.Image.Size.Width;
+				imageFrame.Height = image.Image.Size.Height;
+				imageFrame.X += 10;
+				image.Frame = imageFrame;
 				
 				frame.X += circleWidth;
 				frame.Height = 24f;

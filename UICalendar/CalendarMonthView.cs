@@ -333,7 +333,7 @@ namespace UICalendar
 
 		private void LoadInitialGrids ()
 		{
-			_monthGridView = CreateNewGrid (CurrentMonthYear, DateTime.Now.Date);
+			_monthGridView = CreateNewGrid (CurrentMonthYear, CurrentDate);
 			
 			var rect = _scrollView.Frame;
 			rect.Size = new SizeF { Height = (_monthGridView.Lines + 1) * 44, Width = rect.Size.Width };

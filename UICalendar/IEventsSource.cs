@@ -1,5 +1,5 @@
 // 
-//  Copyright 2012  jonas
+//  Copyright 2012
 // 
 //    Licensed under the Apache License, Version 2.0 (the "License");
 //    you may not use this file except in compliance with the License.
@@ -35,6 +35,10 @@ namespace UICalendar
 		public string Location { get; set; }
 
 		public object CustomObject { get; set; }
+
+		public override string ToString()
+		{
+			return "starts " + StartDate.ToString("s");
+		}
 	}
 }
-
