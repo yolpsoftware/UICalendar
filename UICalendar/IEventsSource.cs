@@ -13,6 +13,7 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 using System;
+using MonoTouch.UIKit;
 
 namespace UICalendar
 {
@@ -35,6 +36,8 @@ namespace UICalendar
 		public string Location { get; set; }
 
 		public object CustomObject { get; set; }
+
+		public Action<UITableViewCell> CustomAction { get; set; }
 
 		public override string ToString()
 		{

@@ -74,7 +74,7 @@ namespace UICalendar
 		{
 			MonthEventElement parent;
 			UIView circleView;
-			UIImageView image;
+			//UIImageView image;
 			UILabel timeLabel;
 			UILabel timeSubLabel;
 			UILabel label;
@@ -84,17 +84,22 @@ namespace UICalendar
 			public MonthEventCellView (MonthEventElement parent) : base(UITableViewCellStyle.Value1, key)
 			{
 				this.parent = parent;
-				
-				circleView = new Circle { Color = parent.TheEvent.color, BackgroundColor = UIColor.Clear };
-				image = new UIImageView(UIImage.FromFile("Images/Calendar/leftarrow.png"));
+
+				if (parent.TheEvent.Event.CustomAction != null)
+				{
+					parent.TheEvent.Event.CustomAction(this);
+				}
+
+				//circleView = new Circle { Color = parent.TheEvent.color, BackgroundColor = UIColor.Clear };
+				//image = new UIImageView(UIImage.FromFile("Images/Calendar/leftarrow.png"));
 				setupTimeLabels ();
 				
 				BackgroundColor = UIColor.Clear;
 				label = new UILabel { TextAlignment = UITextAlignment.Left, Text = parent.TheEvent.Title, Font = font, TextColor = UIColor.Black, Lines = 1, LineBreakMode = UILineBreakMode.TailTruncation, BackgroundColor = UIColor.Clear };
 				lblSub = new UILabel { TextAlignment = UITextAlignment.Left, Text = parent.TheEvent.location, Font = subFont, TextColor = UIColor.Gray, BackgroundColor = UIColor.Clear };
 				
-				ContentView.Add (circleView);
-				ContentView.Add(image);
+				//ContentView.Add (circleView);
+				//ContentView.Add(image);
 				//ContentView.Add (timeSubLabel);
 				ContentView.Add (timeLabel);
 				ContentView.Add (label);
@@ -149,11 +154,11 @@ namespace UICalendar
 				frame.X = margin;
 				frame.Width = circleWidth;
 				circleView.Frame = frame;
-				var imageFrame = frame;
-				imageFrame.Width = image.Image.Size.Width;
-				imageFrame.Height = image.Image.Size.Height;
-				imageFrame.X += 10;
-				image.Frame = imageFrame;
+				//var imageFrame = frame;
+				//imageFrame.Width = image.Image.Size.Width;
+				//imageFrame.Height = image.Image.Size.Height;
+				//imageFrame.X += 10;
+				//image.Frame = imageFrame;
 				
 				frame.X += circleWidth;
 				frame.Height = 24f;
