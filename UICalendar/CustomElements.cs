@@ -141,7 +141,7 @@ namespace UICalendar
 			{
 				label.Text = parent.TheEvent.Title;
 				lblSub.Text = parent.TheEvent.location;
-				circleView.BackgroundColor = parent.TheEvent.color;
+				//circleView.BackgroundColor = parent.TheEvent.color;
 				setupTimeLabels ();
 			}
 
@@ -153,7 +153,8 @@ namespace UICalendar
 				frame.Height -= margin * 2;
 				frame.X = margin;
 				frame.Width = circleWidth;
-				circleView.Frame = frame;
+				//circleView.Frame = frame;
+
 				//var imageFrame = frame;
 				//imageFrame.Width = image.Image.Size.Width;
 				//imageFrame.Height = image.Image.Size.Height;

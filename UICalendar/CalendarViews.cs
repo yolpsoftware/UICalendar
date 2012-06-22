@@ -600,7 +600,7 @@ namespace UICalendar
 		public bool ShouldRefreshUI { get; set; }
 
 		// bottom tab bar
-		//private const float bottomBarH = 40;
+		private const float bottomBarH = 40;
 		//private UIToolbar bottomBar;
 		//private UISegmentedControl calViewSwitcher;
 		//private UIBarButtonItem todayBtn;
@@ -721,7 +721,7 @@ namespace UICalendar
 			// Initialization code
 			// events = new List<CalendarDayEventView>();
 			// Add main scroll view
-			var viewFrame = new RectangleF (Bounds.X, Bounds.Y, CurrentWidth, CurrentHeight); // - bottomBarH);
+			var viewFrame = new RectangleF (Bounds.X, Bounds.Y, CurrentWidth, CurrentHeight - bottomBarH);
 			dayView = new UIView (viewFrame);
 			monthView = new UIView (viewFrame);
 			weekView = new UIView (viewFrame);
