@@ -56,10 +56,10 @@ namespace UICalendar
 		public override UITableViewCell GetCell (UITableView tv)
 		{
 			var cell = tv.DequeueReusableCell (key) as MonthEventCellView;
-			if (cell == null)
+			//if (cell == null)
 				cell = new MonthEventCellView (this);
-			else
-				cell.UpdateFrom (this);
+			//else
+			//	cell.UpdateFrom (this);
 			cell.SelectionStyle = UITableViewCellSelectionStyle.None;
 			return cell;
 			

@@ -373,7 +373,7 @@ namespace UICalendar
 			context.SetShadowWithColor (new SizeF (0, -1), 0.5f, UIColor.White.CGColor);
 			var i = 0;
 			foreach (var d in Enum.GetNames (typeof(DayOfWeek))) {
-				DrawString (d.Substring (0, 3), new RectangleF (i * 46, 44 - 12, 45, 10), font, UILineBreakMode.WordWrap, UITextAlignment.Center);
+				DrawString (NSBundle.MainBundle.LocalizedString(d.Substring (0, 3), ""), new RectangleF (i * 46, 44 - 12, 45, 10), font, UILineBreakMode.WordWrap, UITextAlignment.Center);
 				i++;
 			}
 			context.RestoreState ();

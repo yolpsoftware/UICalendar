@@ -162,7 +162,6 @@ namespace UICalendar
 		{
 			dataSource = source;
 			//notificationObserver = NSNotificationCenter.DefaultCenter.AddObserver ("EKEventStoreChangedNotification", EventsChanged);
-			this.Title = "Calendar";
 			CurrentDate = DateTime.Today;
 			SingleDayView = new CalendarDayTimelineView (rect, tabBarHeight, dataSource);
 			WeekView = new TrueWeekView (CurrentDate, dataSource);
@@ -282,7 +281,7 @@ namespace UICalendar
 		{
 			//  _leftButton = new UIBarButtonItem("Calendars", UIBarButtonItemStyle.Bordered, HandlePreviousDayTouch);
 			NavigationItem.LeftBarButtonItem = _orgLefButton;
-			NavigationItem.Title = "Calendar";
+			//NavigationItem.Title = "Calendar";
 			_rightButton = new UIBarButtonItem (UIBarButtonSystemItem.Add, delegate
 			{
 				if (OnAddEvent != null)
@@ -721,7 +720,7 @@ namespace UICalendar
 			// Initialization code
 			// events = new List<CalendarDayEventView>();
 			// Add main scroll view
-			var viewFrame = new RectangleF (Bounds.X, Bounds.Y, CurrentWidth, CurrentHeight - bottomBarH);
+			var viewFrame = new RectangleF (Bounds.X, Bounds.Y, CurrentWidth, CurrentHeight - 4);
 			dayView = new UIView (viewFrame);
 			monthView = new UIView (viewFrame);
 			weekView = new UIView (viewFrame);
@@ -790,7 +789,7 @@ namespace UICalendar
 
 		private UIView getScrollView ()
 		{
-			parentScrollView = new UIView (new RectangleF (Bounds.X, Bounds.Y + 44, CurrentWidth, CurrentHeight - 44)); // - bottomBarH));
+			parentScrollView = new UIView (new RectangleF (Bounds.X, Bounds.Y + 44, CurrentWidth, CurrentHeight - 44)); // - bottomBarH
 			scrollView = new UIScrollView (parentScrollView.Bounds);
 			scrollView.ContentSize = new SizeF (CurrentWidth, consts.TIMELINE_HEIGHT);
 			scrollView.ScrollEnabled = true;
@@ -1115,14 +1114,15 @@ namespace UICalendar
 		{
 			var dvc = new DialogViewController (UITableViewStyle.Plain, null);
 			dvc.Style = UITableViewStyle.Plain;
-			dvc.View.Frame = new RectangleF (0, rect.Height + rect.Y, rect.Width, monthView.Frame.Height - rect.Height); // - bottomBarH);
+			dvc.View.Frame = new RectangleF (0, rect.Height + rect.Y, rect.Width, monthView.Frame.Height - rect.Height - bottomBarH);
 			return dvc;
 		}
 		public RootElement getMonthDayEvents ()
 		{
 			var section = new Section ();
 			
-			foreach (var theEvent in monthEvents.Where (x => x.startDate.Date == currentDate || x.endDate.Date == currentDate).OrderBy(x=> x.startDate).ToList ()) {
+            var list = monthEvents.Where (x => x.startDate.Date == currentDate || x.endDate.Date == currentDate).OrderBy(x=> x.startDate).ToList();
+			foreach (var theEvent in list) {
 				var theelement = new MonthEventElement (theEvent);
 				theelement.OnEventClicked += theClickedEvent =>
 				{

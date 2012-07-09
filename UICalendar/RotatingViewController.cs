@@ -78,6 +78,7 @@ namespace UICalendar
 
 		public override bool ShouldAutorotateToInterfaceOrientation (UIInterfaceOrientation toInterfaceOrientation)
 		{
+            return toInterfaceOrientation == UIInterfaceOrientation.Portrait;
 			if (toInterfaceOrientation == UIInterfaceOrientation.LandscapeLeft)
 				return true; else if (toInterfaceOrientation == UIInterfaceOrientation.LandscapeRight)
 				return true; else if (toInterfaceOrientation == UIInterfaceOrientation.Portrait)
