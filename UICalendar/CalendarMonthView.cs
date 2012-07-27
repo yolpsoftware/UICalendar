@@ -118,7 +118,7 @@ namespace UICalendar
 		public CalendarMonthView (DateTime currentDate, DateTime[] markedDays, bool isPortrait) : base(new RectangleF (0, 0, 320, 260))
 		{
 			_isPortrait = isPortrait;
-			Console.WriteLine ("Date Received");
+			//Console.WriteLine ("Date Received");
 			MarkedDay = markedDays;
 			CurrentDate = currentDate;
 			CurrentMonthYear = new DateTime (CurrentDate.Year, CurrentDate.Month, 1);
@@ -325,7 +325,7 @@ namespace UICalendar
 			UserInteractionEnabled = true;
 			if (oldFrame != _scrollView.Frame && SizeChanged != null)
 			{
-				this.Frame = new RectangleF(this.Frame.Location,Size);	
+				this.Frame = new RectangleF(this.Frame.Location,Size);
 				SizeChanged ();
 			}
 		}

@@ -623,6 +623,11 @@ namespace UICalendar
 
 		private IEventsSource dataSource;
 
+		public override void TouchesBegan(NSSet touches, UIEvent evt)
+		{
+			base.TouchesBegan(touches, evt);
+		}
+
 		public CalendarDayTimelineView (RectangleF rect, float tabBarHeight, IEventsSource dataSource, bool isPortrait)
 		{
 			_isPortrait = isPortrait;
@@ -667,29 +672,27 @@ namespace UICalendar
 
 		private float CurrentWidth {
 			get {
-				switch (UIDevice.CurrentDevice.Orientation) {
-				case UIDeviceOrientation.Portrait:
+				//if (_isPortrait)
+				//{
 					return orgRect.Size.Width;
-				case UIDeviceOrientation.LandscapeLeft:
-					return orgRect.Size.Height;
-				case UIDeviceOrientation.LandscapeRight:
-					return orgRect.Size.Height;
-				}
-				return orgRect.Size.Width;
+				//}
+				//else
+				//{
+				//	return orgRect.Size.Height;
+				//}
 			}
 		}
 
 		private float CurrentHeight {
 			get {
-				switch (UIDevice.CurrentDevice.Orientation) {
-				case UIDeviceOrientation.Portrait:
+				//if (_isPortrait)
+				//{
 					return orgRect.Size.Height - NavBarHeight;
-				case UIDeviceOrientation.LandscapeLeft:
-					return orgRect.Size.Width - NavBarHeight;
-				case UIDeviceOrientation.LandscapeRight:
-					return orgRect.Size.Width - NavBarHeight;
-				}
-				return orgRect.Size.Height - NavBarHeight;
+				//}
+				//else
+				//{
+				//	return orgRect.Size.Width - NavBarHeight;
+				//}
 			}
 		}
 
@@ -1126,8 +1129,6 @@ namespace UICalendar
 			monthView.AddSubview (eventDvc.TableView);
 			monthView.AddSubview (calMonthView);
 			buildMonthSingleDayEventList (calMonthView.Frame);
-			monthView.BringSubviewToFront(eventDvc.TableView);
-			monthView.BringSubviewToFront(calMonthView);
 		}
 
 		public DialogViewController buildMonthSingleDayEventList (RectangleF rect)
