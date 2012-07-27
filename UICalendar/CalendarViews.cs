@@ -1126,6 +1126,8 @@ namespace UICalendar
 			monthView.AddSubview (eventDvc.TableView);
 			monthView.AddSubview (calMonthView);
 			buildMonthSingleDayEventList (calMonthView.Frame);
+			monthView.BringSubviewToFront(eventDvc.TableView);
+			monthView.BringSubviewToFront(calMonthView);
 		}
 
 		public DialogViewController buildMonthSingleDayEventList (RectangleF rect)

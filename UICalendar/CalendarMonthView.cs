@@ -131,7 +131,6 @@ namespace UICalendar
 				return;
 
 			var yOffset = _isPortrait ? 44 : 0;
-
 			_scrollView = new UIScrollView(new RectangleF(0, yOffset, 320, 460 - yOffset)) { ContentSize = new SizeF(320, 260), ScrollEnabled = false, Frame = new RectangleF(0, yOffset, 320, 460 - yOffset), BackgroundColor = UIColor.FromRGBA(222 / 255f, 222 / 255f, 225 / 255f, 1f) };
 			
 			_shadow = new UIImageView (UIImage.FromFile("Images/shadow.png"));
