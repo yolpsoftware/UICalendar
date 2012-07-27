@@ -146,7 +146,8 @@ namespace UICalendar
 		public DateTime CurrentDate { get; internal set; }
 		public DateTime FirstDayOfWeek { get; set; }
 		public CalendarDayTimelineView SingleDayView { get; set; }
-		public TrueWeekView WeekView { get; set; }
+		public CalendarDayTimelineView SingleDayLandscapeView { get; set; }
+		//public TrueWeekView WeekView { get; set; }
 		// public TrueWeekViewController WeekController { get; set; }
 		public NSAction AddNewEvent { get; set; }
 		private UIToolbar bottomBar;
@@ -163,11 +164,14 @@ namespace UICalendar
 			dataSource = source;
 			//notificationObserver = NSNotificationCenter.DefaultCenter.AddObserver ("EKEventStoreChangedNotification", EventsChanged);
 			CurrentDate = DateTime.Today;
-			SingleDayView = new CalendarDayTimelineView (rect, tabBarHeight, dataSource);
-			WeekView = new TrueWeekView (CurrentDate, dataSource);
-			WeekView.UseCalendar = true;
-			LandscapeLeftView = WeekView;
-			LandscapeRightView = WeekView;
+			SingleDayView = new CalendarDayTimelineView (rect, tabBarHeight, dataSource, true);
+			SingleDayLandscapeView = new CalendarDayTimelineView(new RectangleF(0, 0, 480, 320), 0, dataSource, false);
+			//WeekView = new TrueWeekView (CurrentDate, dataSource);
+			//WeekView.UseCalendar = true;
+			//LandscapeLeftView = WeekView;
+			//LandscapeRightView = WeekView;
+			LandscapeLeftView = SingleDayLandscapeView;
+			LandscapeRightView = SingleDayLandscapeView;
 			PortraitView = SingleDayView;
 			SingleDayView.ForceAutoRotate = delegate{ForceAutoRotate();};
 			SingleDayView.OnEventClicked += theEvent =>
@@ -179,7 +183,7 @@ namespace UICalendar
 				}
 			};
 			
-			WeekView.OnEventClicked += theEvent =>
+			SingleDayLandscapeView.OnEventClicked += theEvent =>
 			{
 				if (theEvent != null) {
 					if (OnEventClicked != null) {
@@ -188,6 +192,10 @@ namespace UICalendar
 				}
 			};
 			SingleDayView.dateChanged += theDate =>
+			{
+				CurrentDate = theDate;
+			};
+			SingleDayLandscapeView.dateChanged += theDate =>
 			{
 				CurrentDate = theDate;
 			};
@@ -214,19 +222,21 @@ namespace UICalendar
 
 		public void UpdateData()
 		{
-			WeekView.EventsNeedRefresh = true;
+			//WeekView.EventsNeedRefresh = true;
 			SingleDayView.EventsNeedRefresh = true;
 			SingleDayView.ShouldRefreshUI = true;
+			SingleDayLandscapeView.EventsNeedRefresh = true;
+			SingleDayLandscapeView.ShouldRefreshUI = true;
 			switch (UIDevice.CurrentDevice.Orientation)
 			{
 				case UIDeviceOrientation.Portrait:
 					SingleDayView.reloadDay();
 					break;
 				case UIDeviceOrientation.LandscapeLeft:
-					WeekView.reloadDay();
+					SingleDayLandscapeView.reloadDay();
 					break;
 				case UIDeviceOrientation.LandscapeRight:
-					WeekView.reloadDay();
+					SingleDayLandscapeView.reloadDay();
 					break;
 			}
 		}
@@ -245,25 +255,26 @@ namespace UICalendar
 				_orgLefButton = NavigationItem.LeftBarButtonItem;
 				hasLoaded = true;
 			}
-			WeekView.isVisible = true;
+			SingleDayLandscapeView.isVisible = true;
 			SingleDayView.isVisible = true;
 			base.ViewWillAppear (animated);
 		}
 
 		public override void ViewWillDisappear (bool animated)
 		{
-			WeekView.isVisible = false;
+			SingleDayLandscapeView.isVisible = false;
 			SingleDayView.isVisible = false;
 			base.ViewWillDisappear (animated);
 		}
 
 		private void landScapeNavBar ()
 		{
-			_leftButton = new UIBarButtonItem (Graphics.AdjustImage(Images.leftArrow,CGBlendMode.SourceAtop,UIColor.White), UIBarButtonItemStyle.Bordered, HandlePreviousWeekTouch);
-			NavigationItem.LeftBarButtonItem = _leftButton;
-			NavigationItem.Title = WeekView.FirstDayOfWeek.ToString("MMM dd yyyy") + " - " + WeekView.FirstDayOfWeek.AddDays (6).ToString("MMM dd yyyy");
-			_rightButton = new UIBarButtonItem (Graphics.AdjustImage(Images.rightArrow,CGBlendMode.SourceAtop,UIColor.White), UIBarButtonItemStyle.Bordered, HandleNextWeekTouch);
-			NavigationItem.RightBarButtonItem = _rightButton;
+			NavigationController.SetNavigationBarHidden(true, true);
+			//_leftButton = new UIBarButtonItem (Graphics.AdjustImage(Images.leftArrow,CGBlendMode.SourceAtop,UIColor.White), UIBarButtonItemStyle.Bordered, HandlePreviousWeekTouch);
+			//NavigationItem.LeftBarButtonItem = _leftButton;
+			//NavigationItem.Title = WeekView.FirstDayOfWeek.ToString("MMM dd yyyy") + " - " + WeekView.FirstDayOfWeek.AddDays (6).ToString("MMM dd yyyy");
+			//_rightButton = new UIBarButtonItem (Graphics.AdjustImage(Images.rightArrow,CGBlendMode.SourceAtop,UIColor.White), UIBarButtonItemStyle.Bordered, HandleNextWeekTouch);
+			//NavigationItem.RightBarButtonItem = _rightButton;
 		}
 		bool forceRotate;
 		public void ForceAutoRotate()
@@ -279,6 +290,7 @@ namespace UICalendar
 
 		private void portriatNavBar ()
 		{
+			NavigationController.SetNavigationBarHidden(false, true);
 			//  _leftButton = new UIBarButtonItem("Calendars", UIBarButtonItemStyle.Bordered, HandlePreviousDayTouch);
 			NavigationItem.LeftBarButtonItem = _orgLefButton;
 			//NavigationItem.Title = "Calendar";
@@ -354,12 +366,12 @@ namespace UICalendar
 		public void setDate (DateTime date)
 		{
 			CurrentDate = date;
-			WeekView.SetDayOfWeek (CurrentDate);
+			SingleDayLandscapeView.SetDateAndReloadDay(CurrentDate);
 			SingleDayView.SetDateAndReloadDay (CurrentDate);
-			if (UIDevice.CurrentDevice.Orientation != UIDeviceOrientation.Portrait) {
-				NavigationItem.Title = WeekView.FirstDayOfWeek.ToString("MMM dd yyyy") + " - " + WeekView.FirstDayOfWeek.AddDays (6).ToString("MMM dd yyyy");
-				WeekView.ReDraw ();
-			}
+			//if (UIDevice.CurrentDevice.Orientation != UIDeviceOrientation.Portrait) {
+			//    NavigationItem.Title = WeekView.FirstDayOfWeek.ToString("MMM dd yyyy") + " - " + WeekView.FirstDayOfWeek.AddDays (6).ToString("MMM dd yyyy");
+			//    WeekView.ReDraw ();
+			//}
 		}
 
 		private void HandleNextWeekTouch (object sender, EventArgs e)
@@ -598,6 +610,11 @@ namespace UICalendar
 		public bool isVisible { get; set; }
 		public bool ShouldRefreshUI { get; set; }
 
+		CalendarMonthView calMonthView;
+		DialogViewController eventDvc;
+		UIView eventDvcTableView;
+		private bool _isPortrait;
+
 		// bottom tab bar
 		private const float bottomBarH = 40;
 		//private UIToolbar bottomBar;
@@ -606,8 +623,9 @@ namespace UICalendar
 
 		private IEventsSource dataSource;
 
-		public CalendarDayTimelineView (RectangleF rect, float tabBarHeight, IEventsSource dataSource)
+		public CalendarDayTimelineView (RectangleF rect, float tabBarHeight, IEventsSource dataSource, bool isPortrait)
 		{
+			_isPortrait = isPortrait;
 			this.dataSource = dataSource;
 			orgRect = rect;
 			NavBarHeight = UIApplication.SharedApplication.StatusBarFrame.Height;
@@ -721,6 +739,9 @@ namespace UICalendar
 			// events = new List<CalendarDayEventView>();
 			// Add main scroll view
 			var viewFrame = new RectangleF (Bounds.X, Bounds.Y, CurrentWidth, CurrentHeight - 4);
+			if (!_isPortrait) {
+				viewFrame.Height += 49;
+			}
 			dayView = new UIView (viewFrame);
 			monthView = new UIView (viewFrame);
 			weekView = new UIView (viewFrame);
@@ -745,7 +766,7 @@ namespace UICalendar
 			//AddSubview (bottomBar);
 			LoadButtons ();
 			
-			scrollView.AddSubview (getTimeLineView ());
+			//scrollView.AddSubview (getTimeLineView ());
 			
 		}
 
@@ -1074,12 +1095,9 @@ namespace UICalendar
 			ScrollToTime(dateToScrollTo);
 			*/			
 		
-		CalendarMonthView calMonthView;
-		DialogViewController eventDvc;
-		UIView eventDvcTableView;
 		public void buildMonthView ()
 		{
-			calMonthView = new CalendarMonthView (currentDate, monthEvents.Select (x => x.startDate.Date).ToArray ());
+			calMonthView = new CalendarMonthView (currentDate, monthEvents.Select (x => x.startDate.Date).ToArray (), _isPortrait);
 			eventDvc = buildMonthSingleDayEventList (calMonthView.Frame);
 			calMonthView.IsDayMarkedDelegate += date => { return monthEvents.Where (x => x.startDate.Date >= date.Date && x.startDate < date.Date.AddDays(1)).Any(); };
 			calMonthView.OnDateSelected += date =>
@@ -1114,14 +1132,22 @@ namespace UICalendar
 		{
 			var dvc = new DialogViewController (UITableViewStyle.Plain, null);
 			dvc.Style = UITableViewStyle.Plain;
-			dvc.View.Frame = new RectangleF (0, rect.Height + rect.Y, rect.Width, monthView.Frame.Height - rect.Height - bottomBarH);
+			if (_isPortrait)
+			{
+				dvc.View.Frame = new RectangleF(0, rect.Height + rect.Y, rect.Width, monthView.Frame.Height - rect.Height - bottomBarH);
+			}
+			else
+			{
+				dvc.View.Frame = new RectangleF(rect.Width + rect.X, 0, 480 - rect.Width, 320 - bottomBarH);    //monthView.Frame.Height - rect.Height - 
+			}
+
 			return dvc;
 		}
 		public RootElement getMonthDayEvents ()
 		{
 			var section = new Section ();
 			
-            var list = monthEvents.Where (x => x.startDate.Date == currentDate || x.endDate.Date == currentDate).OrderBy(x=> x.startDate).ToList();
+			var list = monthEvents.Where (x => x.startDate.Date == currentDate || x.endDate.Date == currentDate).OrderBy(x=> x.startDate).ToList();
 			foreach (var theEvent in list) {
 				var theelement = new MonthEventElement (theEvent);
 				theelement.OnEventClicked += theClickedEvent =>
@@ -1766,3 +1792,4 @@ namespace UICalendar
 		#endregion
 	}
 }
+

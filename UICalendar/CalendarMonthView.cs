@@ -62,7 +62,7 @@ namespace UICalendar
 		public bool ShowToolBar;
 
 		private UIScrollView _scrollView;
-		private UIImageView _shadow;
+		private UIImageView _shadow, _shadowH;
 		private bool calendarIsLoaded;
 		private UIToolbar toolbar;
 		private UIBarButtonItem todayButton;
@@ -74,6 +74,7 @@ namespace UICalendar
 		private UIButton _leftButton, _rightButton;
 		public Action SizeChanged;
 		private IEventsSource dataSource;
+		private bool _isPortrait;
 
 		public SizeF Size {
 			get { return new SizeF (_scrollView.Frame.Size.Width, _scrollView.Frame.Size.Height + _scrollView.Frame.Y + (ShowToolBar ? toolbar.Frame.Height : 0)); }
@@ -114,8 +115,9 @@ namespace UICalendar
 			this.dataSource = dataSource;
 		}
 
-		public CalendarMonthView (DateTime currentDate, DateTime[] markedDays) : base(new RectangleF (0, 0, 320, 260))
+		public CalendarMonthView (DateTime currentDate, DateTime[] markedDays, bool isPortrait) : base(new RectangleF (0, 0, 320, 260))
 		{
+			_isPortrait = isPortrait;
 			Console.WriteLine ("Date Received");
 			MarkedDay = markedDays;
 			CurrentDate = currentDate;
@@ -127,12 +129,15 @@ namespace UICalendar
 		{
 			if (calendarIsLoaded)
 				return;
-			
-			_scrollView = new UIScrollView (new RectangleF (0, 44, 320, 460 - 44)) { ContentSize = new SizeF (320, 260), ScrollEnabled = false, Frame = new RectangleF (0, 44, 320, 460 - 44), BackgroundColor = UIColor.FromRGBA (222 / 255f, 222 / 255f, 225 / 255f, 1f) };
+
+			var yOffset = _isPortrait ? 44 : 0;
+
+			_scrollView = new UIScrollView(new RectangleF(0, yOffset, 320, 460 - yOffset)) { ContentSize = new SizeF(320, 260), ScrollEnabled = false, Frame = new RectangleF(0, yOffset, 320, 460 - yOffset), BackgroundColor = UIColor.FromRGBA(222 / 255f, 222 / 255f, 225 / 255f, 1f) };
 			
 			_shadow = new UIImageView (UIImage.FromFile("Images/shadow.png"));
+			_shadowH = new UIImageView (UIImage.FromFile("Images/Calendar/shadow_h.png"));
 			
-			if (ShowToolBar) {
+			if (ShowToolBar && _isPortrait) {
 				toolbar = new UIToolbar (new RectangleF (0, 0, 320, 44));
 				todayButton = new UIBarButtonItem ("Today", UIBarButtonItemStyle.Bordered, delegate {
 					if (OnDateSelected != null)
@@ -166,6 +171,7 @@ namespace UICalendar
 			BackgroundColor = UIColor.Clear;
 			AddSubview (_scrollView);
 			AddSubview (_shadow);
+			AddSubview(_shadowH);
 			if (ShowToolBar)
 				AddSubview (toolbar);
 			_scrollView.AddSubview (_monthGridView);
@@ -236,6 +242,7 @@ namespace UICalendar
 			_monthGridView.Alpha = 0;
 			
 			_shadow.Frame = new RectangleF (new PointF (0, gridToMove.Lines * 44 - 88), _shadow.Frame.Size);
+			_shadowH.Frame = new RectangleF(new PointF(320, 0), _shadowH.Frame.Size);
 			
 			var oldFrame = _scrollView.Frame;
 			_scrollView.Frame = new RectangleF (_scrollView.Frame.Location, new SizeF (_scrollView.Frame.Width, (gridToMove.Lines + 1) * 44));
@@ -298,7 +305,8 @@ namespace UICalendar
 			gridToMove.Center = new PointF (gridToMove.Center.X, gridToMove.Center.Y - pointsToMove);			
 			_monthGridView.Alpha = 0;			
 			_shadow.Frame = new RectangleF (new PointF (0, gridToMove.Lines * 44 - 88), _shadow.Frame.Size);
-			
+			_shadowH.Frame = new RectangleF(new PointF(320, 0), _shadowH.Frame.Size);
+
 			var oldFrame = _scrollView.Frame;
 			_scrollView.Frame = new RectangleF (_scrollView.Frame.Location, new SizeF (_scrollView.Frame.Width, (gridToMove.Lines + 1) * 44));
 			_scrollView.ContentSize = _scrollView.Frame.Size;
@@ -325,9 +333,9 @@ namespace UICalendar
 
 		private MonthGridView CreateNewGrid (DateTime date, DateTime selectedDate)
 		{
-			var grid = new MonthGridView (this, date, selectedDate);
+			var grid = new MonthGridView (this, date, selectedDate, _isPortrait);
 			grid.BuildGrid ();
-			grid.Frame = new RectangleF (0, 0, 320, 400);
+			grid.Frame = new RectangleF (0, 0, 320, 356);
 			return grid;
 		}
 
@@ -343,6 +351,8 @@ namespace UICalendar
 			var imgRect = _shadow.Frame;
 			imgRect.Y = rect.Size.Height - 132;
 			_shadow.Frame = imgRect;
+			_shadowH.Frame = new RectangleF(new PointF(320, 0), _shadowH.Frame.Size);
+
 			if (ShowToolBar) {
 				var toolRect = toolbar.Frame;
 				toolRect.Y = rect.Size.Height + rect.Y;
@@ -352,7 +362,11 @@ namespace UICalendar
 
 		public override void Draw (RectangleF rect)
 		{
-			Images.calendarTopBar.Draw (new PointF (0, 0));
+			if (_isPortrait)
+			{
+				Images.calendarTopBar.Draw(new PointF(0, 0));
+			}
+
 			DrawDayLabels (rect);
 			DrawMonthLabel (rect);
 		}
@@ -406,8 +420,11 @@ namespace UICalendar
 		public int weekdayOfFirst;
 		public IList<DateTime> Marks { get; set; }
 
-		public MonthGridView (CalendarMonthView calendarMonthView, DateTime month, DateTime day)
+		private bool _isPortrait;
+
+		public MonthGridView (CalendarMonthView calendarMonthView, DateTime month, DateTime day, bool isPortrait)
 		{
+			_isPortrait = isPortrait;
 			SelectedDate = day;
 			_calendarMonthView = calendarMonthView;
 			_currentDay = DateTime.Today;
@@ -453,15 +470,32 @@ namespace UICalendar
 					line++;
 				}
 			}
-			
+
 			//next month
-			if (position != 1) {
-				int dayCounter = 1;
-				for (int i = position; i < 8; i++) {
+			int dayCounter = 1;
+			if (position != 1)
+			{
+				for (int i = position; i < 8; i++)
+				{
 					var viewDay = new DateTime(nextMonth.Year, nextMonth.Month, dayCounter);
-					var dayView = new CalendarDayView { Frame = new RectangleF ((i - 1) * 46 - 1, line * 44, 47, 45), Text = dayCounter.ToString (), Marked = _calendarMonthView.isDayMarker (viewDay) };
-					AddSubview (dayView);
-					_dayTiles.Add (dayView);
+					var dayView = new CalendarDayView { Frame = new RectangleF((i - 1) * 46 - 1, line * 44, 47, 45), Text = dayCounter.ToString(), Marked = _calendarMonthView.isDayMarker(viewDay) };
+					AddSubview(dayView);
+					_dayTiles.Add(dayView);
+					dayCounter++;
+				}
+			}
+
+			//one more row in landscape mode
+			if (!_isPortrait)
+			{
+				line++;
+				position = 1;
+				for (int i = position; i < 8; i++)
+				{
+					var viewDay = new DateTime(nextMonth.Year, nextMonth.Month, dayCounter);
+					var dayView = new CalendarDayView { Frame = new RectangleF((i - 1) * 46 - 1, line * 44, 47, 45), Text = dayCounter.ToString(), Marked = _calendarMonthView.isDayMarker(viewDay) };
+					AddSubview(dayView);
+					_dayTiles.Add(dayView);
 					dayCounter++;
 				}
 			}
@@ -469,6 +503,10 @@ namespace UICalendar
 			Frame = new RectangleF (Frame.Location, new SizeF (Frame.Width, (line + 1) * 44));
 			
 			Lines = (position == 1 ? line - 1 : line);
+			if (!_isPortrait)
+			{
+				Lines++;
+			}
 			
 			if (SelectedDayView != null)
 				this.BringSubviewToFront (SelectedDayView);

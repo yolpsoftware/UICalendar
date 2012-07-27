@@ -78,7 +78,7 @@ namespace UICalendar
 
 		public override bool ShouldAutorotateToInterfaceOrientation (UIInterfaceOrientation toInterfaceOrientation)
 		{
-            return toInterfaceOrientation == UIInterfaceOrientation.Portrait;
+			return toInterfaceOrientation == UIInterfaceOrientation.Portrait;
 			if (toInterfaceOrientation == UIInterfaceOrientation.LandscapeLeft)
 				return true; else if (toInterfaceOrientation == UIInterfaceOrientation.LandscapeRight)
 				return true; else if (toInterfaceOrientation == UIInterfaceOrientation.Portrait)
@@ -88,22 +88,23 @@ namespace UICalendar
 
 		public abstract void SetupNavBar ();
 
-		private void SetView ()
+		private void SetView()
 		{
 			//Console.WriteLine(InterfaceOrientation);
-			switch (InterfaceOrientation) {
-			case UIInterfaceOrientation.Portrait:
-				_showView (PortraitView);
-				break;
-			
-			case UIInterfaceOrientation.LandscapeLeft:
-				_showView (LandscapeLeftView);
-				break;
-			case UIInterfaceOrientation.LandscapeRight:
-				_showView (LandscapeRightView);
-				break;
+			switch (InterfaceOrientation)
+			{
+				case UIInterfaceOrientation.Portrait:
+					_showView(PortraitView);
+					break;
+
+				case UIInterfaceOrientation.LandscapeLeft:
+					_showView(LandscapeLeftView);
+					break;
+				case UIInterfaceOrientation.LandscapeRight:
+					_showView(LandscapeRightView);
+					break;
 			}
-			SetupNavBar ();
+			SetupNavBar();
 		}
 
 
