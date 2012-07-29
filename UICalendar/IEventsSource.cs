@@ -39,6 +39,8 @@ namespace UICalendar
 
 		public Action<UITableViewCell> CustomAction { get; set; }
 
+		public bool? ShowOnlyInLandscape { get; set; }
+
 		public override string ToString()
 		{
 			return "starts " + StartDate.ToString("s");

@@ -118,12 +118,12 @@ namespace UICalendar
 		public CalendarMonthView (DateTime currentDate, DateTime[] markedDays, bool isPortrait)
 		{
 			_isPortrait = isPortrait;
-            if (_isPortrait) {
-                this.Frame = new RectangleF (0, 0, 320, 260);
-            }
-            else {
-                this.Frame = new RectangleF (0, -1, 320, 260);
-            }
+			if (_isPortrait) {
+				this.Frame = new RectangleF (0, 0, 320, 260);
+			}
+			else {
+				this.Frame = new RectangleF (0, -1, 320, 260);
+			}
 			//Console.WriteLine ("Date Received");
 			MarkedDay = markedDays;
 			CurrentDate = currentDate;

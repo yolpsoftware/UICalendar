@@ -16,6 +16,9 @@ using MonoTouch;
 //    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
+using System.Drawing;
+
+
 namespace UICalendar
 {
 
@@ -24,20 +27,23 @@ namespace UICalendar
 	{
 		//public NSObject notificationObserver;
 
-		public RotatingViewController (IntPtr handle) : base(handle)
+		public RotatingViewController(IntPtr handle)
+			: base(handle)
 		{
-			initialize ();
+			initialize();
 		}
 
 		[Export("initWithCoder:")]
-		public RotatingViewController (NSCoder coder) : base(coder)
+		public RotatingViewController(NSCoder coder)
+			: base(coder)
 		{
-			initialize ();
+			initialize();
 		}
 
-		public RotatingViewController (string nibName, NSBundle bundle) : base(nibName, bundle)
+		public RotatingViewController(string nibName, NSBundle bundle)
+			: base(nibName, bundle)
 		{
-			initialize ();
+			initialize();
 		}
 
 		public RotatingViewController()
@@ -58,76 +64,67 @@ namespace UICalendar
 		public UIView LandscapeRightView { get; set; }
 		public bool viewControllerVisible { get; set; }
 
-		public override void ViewDidLoad ()
+		public override void ViewDidLoad()
 		{
 			//  SetView();
 		}
 
-		public override void ViewWillAppear (bool animated)
+		public override void ViewWillAppear(bool animated)
 		{
 			viewControllerVisible = true;
-			SetView ();
+			SetView(InterfaceOrientation, 0.3);
 		}
 
-		private void _showView (UIView view)
+		public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
 		{
-			_removeAllViews ();
-			view.Frame = View.Frame;
-			View.AddSubview (view);
+			return toInterfaceOrientation != UIInterfaceOrientation.PortraitUpsideDown;
 		}
 
-		public override bool ShouldAutorotateToInterfaceOrientation (UIInterfaceOrientation toInterfaceOrientation)
-		{
-			return toInterfaceOrientation == UIInterfaceOrientation.Portrait;
-			if (toInterfaceOrientation == UIInterfaceOrientation.LandscapeLeft)
-				return true; else if (toInterfaceOrientation == UIInterfaceOrientation.LandscapeRight)
-				return true; else if (toInterfaceOrientation == UIInterfaceOrientation.Portrait)
-				return true;
-			return false;
-		}
+		public abstract void SetupNavBar(UIInterfaceOrientation orientation);
 
-		public abstract void SetupNavBar ();
-
-		private void SetView()
+		private void SetView(UIInterfaceOrientation interfaceOrientation, double duration)
 		{
-			//Console.WriteLine(InterfaceOrientation);
-			switch (InterfaceOrientation)
+			UIView.BeginAnimations("test");
+			UIView.SetAnimationDuration(duration);
+			_removeAllViews();
+			UIView view;
+			switch (interfaceOrientation)
 			{
 				case UIInterfaceOrientation.Portrait:
-					_showView(PortraitView);
+					view = PortraitView;
 					break;
 
 				case UIInterfaceOrientation.LandscapeLeft:
-					_showView(LandscapeLeftView);
+					view = LandscapeLeftView;
 					break;
 				case UIInterfaceOrientation.LandscapeRight:
-					_showView(LandscapeRightView);
+					view = LandscapeRightView;
 					break;
+				default:
+					throw new NotImplementedException();
 			}
-			SetupNavBar();
+			view.Frame = interfaceOrientation == UIInterfaceOrientation.Portrait ? new RectangleF(0, 0, 320, 480) : new RectangleF(0, 0, 480, 320);
+			View.AddSubview(view);
+			UIView.CommitAnimations();
+			SetupNavBar(interfaceOrientation);
 		}
 
-
-
-		public override void DidRotate (UIInterfaceOrientation fromInterfaceOrientation)
+		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
 		{
-			SetView ();
+			SetView(toInterfaceOrientation, duration);
 		}
 
-
-
-		private void _removeAllViews ()
+		private void _removeAllViews()
 		{
-			PortraitView.RemoveFromSuperview ();
-			LandscapeLeftView.RemoveFromSuperview ();
-			LandscapeRightView.RemoveFromSuperview ();
+			PortraitView.RemoveFromSuperview();
+			LandscapeLeftView.RemoveFromSuperview();
+			LandscapeRightView.RemoveFromSuperview();
 		}
 
-		public override void ViewDidDisappear (bool animated)
+		public override void ViewDidDisappear(bool animated)
 		{
 			viewControllerVisible = false;
-			base.ViewWillDisappear (animated);
+			base.ViewWillDisappear(animated);
 		}
 	}
 }
-
